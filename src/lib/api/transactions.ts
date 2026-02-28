@@ -1,127 +1,56 @@
-import { z } from "zod";
+import { seedTransactions } from "@/seedData";
+import type { StructuredError, Transaction } from "@/types";
 
-import { fetchJson } from "@/lib/api/client";
-import {
-  createTransactionSchema,
-  transactionQuerySchema,
-  type CreateTransactionInput,
-  type Transaction,
-  type TransactionQueryInput,
-} from "@/lib/schemas/transaction-schema";
+/**
+ * Local-only API stub — all data comes from seedData.
+ * Suitable for a static SPA deployment (e.g. Vercel).
+ */
 
-interface StructuredApiError {
-  code: string;
-  message: string;
-  status: number;
-  details?: Record<string, string[] | undefined>;
+let localStore: Transaction[] = [...seedTransactions];
+
+export async function listTransactions(
+  _query: Record<string, unknown>,
+): Promise<Transaction[]> {
+  return [...localStore];
 }
 
-const API_MODE_ENABLED: boolean =
-  process.env.NEXT_PUBLIC_TRANSACTIONS_MODE === "api";
+export async function createTransaction(
+  data: Omit<Transaction, "id"> & { id?: string },
+): Promise<Transaction> {
+  const tx: Transaction = {
+    ...data,
+    id: data.id ?? crypto.randomUUID(),
+  };
+  localStore = [tx, ...localStore];
+  return tx;
+}
 
-const mockTransactions: Transaction[] = [];
-
-export const toStructuredApiError = (error: unknown): StructuredApiError => {
-  if (error instanceof z.ZodError) {
+export function toStructuredApiError(caught: unknown): StructuredError {
+  if (
+    typeof caught === "object" &&
+    caught !== null &&
+    "code" in caught &&
+    "message" in caught
+  ) {
+    const err = caught as Record<string, unknown>;
     return {
-      code: "VALIDATION_ERROR",
-      message: "Invalid request payload.",
-      status: 400,
-      details: error.flatten().fieldErrors,
+      code: String(err.code ?? "UNKNOWN"),
+      message: String(err.message ?? "An error occurred"),
+      status: typeof err.status === "number" ? err.status : 500,
     };
   }
 
-  if (error instanceof Error) {
-    const candidate = error as Error & {
-      status?: number;
-      code?: string;
-      details?: Record<string, string[] | undefined>;
-    };
-
+  if (caught instanceof Error) {
     return {
-      code: candidate.code ?? "REQUEST_FAILED",
-      message: candidate.message,
-      status: candidate.status ?? 500,
-      details: candidate.details,
+      code: "INTERNAL_ERROR",
+      message: caught.message,
+      status: 500,
     };
   }
 
   return {
-    code: "UNKNOWN_ERROR",
-    message: "Unexpected error occurred while processing transactions.",
+    code: "UNKNOWN",
+    message: "An unexpected error occurred",
     status: 500,
   };
-};
-
-const buildTransactionsQueryString = (query: TransactionQueryInput): string => {
-  const params = new URLSearchParams();
-
-  if (typeof query.limit === "number") {
-    params.set("limit", String(query.limit));
-  }
-
-  if (typeof query.type === "string" && query.type.length > 0) {
-    params.set("type", query.type);
-  }
-
-  if (typeof query.category === "string" && query.category.length > 0) {
-    params.set("category", query.category);
-  }
-
-  const queryString = params.toString();
-  return queryString.length > 0 ? `?${queryString}` : "";
-};
-
-export const listTransactions = async (
-  input: unknown = {},
-): Promise<Transaction[]> => {
-  try {
-    const query = transactionQuerySchema.parse(input);
-
-    if (!API_MODE_ENABLED) {
-      const limited =
-        typeof query.limit === "number"
-          ? mockTransactions.slice(0, query.limit)
-          : mockTransactions;
-
-      return limited;
-    }
-
-    const queryString = buildTransactionsQueryString(query);
-    const response = await fetchJson<Transaction[]>(`/transactions${queryString}`);
-
-    return response;
-  } catch (error: unknown) {
-    throw toStructuredApiError(error);
-  }
-};
-
-export const createTransaction = async (
-  input: unknown,
-): Promise<Transaction> => {
-  try {
-    const payload: CreateTransactionInput = createTransactionSchema.parse(input);
-
-    if (!API_MODE_ENABLED) {
-      const created: Transaction = {
-        id: crypto.randomUUID(),
-        ...payload,
-      };
-
-      mockTransactions.unshift(created);
-      return created;
-    }
-
-    const response = await fetchJson<Transaction>("/transactions", {
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-
-    return response;
-  } catch (error: unknown) {
-    throw toStructuredApiError(error);
-  }
-};
+}
