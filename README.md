@@ -1,5 +1,10 @@
 # cashflow-dashboard
 
+> Built with [Dark Factory v4](https://github.com/ibuzzardo/dark-factory-v4) — autonomous AI software development pipeline
+
+**[Live Demo](https://cashflow-dashboard-omega.vercel.app)**
+
+
 Personal finance dashboard built with React + TypeScript, Tailwind CSS, shadcn/ui, Recharts, and Lucide icons.
 
 ## Features
