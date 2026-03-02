@@ -4,7 +4,6 @@
 
 **[Live Demo](https://cashflow-dashboard-omega.vercel.app)**
 
-
 Personal finance dashboard built with React + TypeScript, Tailwind CSS, shadcn/ui, Recharts, and Lucide icons.
 
 ## Features
@@ -17,54 +16,52 @@ Personal finance dashboard built with React + TypeScript, Tailwind CSS, shadcn/u
 - Dark and light mode with persisted preference
 - Typed API utilities with structured error mapping
 
-## Architecture Overview
+## Tech Stack
 
-The app is organized by feature and shared layers:
+- Next.js 15, TypeScript, Tailwind CSS
+- shadcn/ui component library
+- Recharts for data visualisation
+- Lucide icons
+- Zod for schema validation
 
-- `src/pages`: page-level composition (`dashboard-page.tsx`)
-- `src/components/dashboard`: dashboard UI building blocks (stats, charts, transactions, dialog)
-- `src/components/theme`: theme controls and persistence behavior
-- `src/components/ui`: shared shadcn/ui primitives
-- `src/lib/schemas`: Zod schemas and validation types
-- `src/lib/types`: reusable TypeScript domain models
-- `src/lib/api`: typed API client + transaction API utilities
-- `src/hooks`: data orchestration hooks for dashboard state/loading/errors
-- `src/styles`: global Tailwind and design token styles
-- `src/test`: dashboard and API behavior tests
+## Getting Started
 
-## Component Map
+```bash
+git clone https://github.com/ibuzzardo/cashflow-dashboard.git
+cd cashflow-dashboard
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-- `DashboardPage`
-- `TopBar`
-- `ThemeToggle`
-- `StatCard` (x4)
-- `SpendingDonutChart`
-- `BalanceTrendChart`
-- `TransactionList`
-- `AddTransactionDialog`
+Open `http://localhost:3000`.
 
 ## Environment Variables
 
 Create `.env` from `.env.example`:
 
-- `NEXT_PUBLIC_API_BASE_URL`: Base URL for backend API requests
-- `NEXT_PUBLIC_TRANSACTIONS_MODE`: `mock` or `api`
+- `NEXT_PUBLIC_API_BASE_URL` — Base URL for backend API requests
+- `NEXT_PUBLIC_TRANSACTIONS_MODE` — `mock` or `api`
 
-## Scripts
+## Architecture
 
-Use npm only.
+The app is organised by feature and shared layers:
 
-- `npm install`
-- `npm run dev`
-- `npm run build`
-- `npm run test`
-- `npm run lint`
+- `src/pages` — page-level composition
+- `src/components/dashboard` — dashboard UI (stats, charts, transactions, dialog)
+- `src/components/theme` — theme controls and persistence
+- `src/components/ui` — shared shadcn/ui primitives
+- `src/lib/schemas` — Zod schemas and validation types
+- `src/lib/types` — reusable TypeScript domain models
+- `src/lib/api` — typed API client + transaction utilities
+- `src/hooks` — data orchestration hooks
+- `src/test` — dashboard and API behaviour tests
 
-## Manual QA Checklist
+## Pipeline Stats
 
-- Layout and spacing are usable at 320px, 768px, and 1280px
-- Add transaction dialog validates required fields and invalid values
-- Successful submission updates transaction list
-- Failed submission shows structured error message
-- Theme toggle updates UI and persists after reload
-- Chart tooltips and legends render correctly in light and dark mode
+- **Sprint cost:** ~$1.30
+- **Coder passes:** 1
+
+## License
+
+MIT — see [LICENSE](LICENSE)
